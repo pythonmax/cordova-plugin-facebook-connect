@@ -2,6 +2,7 @@ package org.apache.cordova.facebook;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -376,6 +377,9 @@ public class ConnectPlugin extends CordovaPlugin {
                 }
             });
 
+            return true;
+        } else if (action.equals("isFacebookAppInstalled")) {
+            executeIsFacebookAppInstalled(args, callbackContext);
             return true;
         }
         return false;
@@ -1097,4 +1101,29 @@ public class ConnectPlugin extends CordovaPlugin {
         }
         return new JSONObject();
     }
+
+    private void executeIsFacebookAppInstalled(JSONArray args, CallbackContext callbackContext) {
+        String[] toCheck = {"com.facebook.katana", "com.facebook.orca", "com.facebook.lite", "com.facebook.android"};
+        boolean result = false;
+        for (String pkg : toCheck) {
+            if (isPackageInstalled(cordova.getActivity(), pkg)) {
+                result = true;
+                break;
+            }
+        }
+
+        callbackContext.sendPluginResult(new PluginResult(
+                PluginResult.Status.OK,
+                result));
+    }
+
+    private static boolean isPackageInstalled(Context context, String packageName) {
+        try {
+            context.getPackageManager().getApplicationInfo(packageName, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
 }
